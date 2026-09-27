@@ -32,11 +32,11 @@
 **Interfaces:**
 - Produces: `docker-compose.yml` running `db` (Postgres 16 Alpine on port 5432) and `backend` (FastAPI on port 8000).
 
-- [ ] **Step 1: Write requirements.txt with pinned dependencies**
-- [ ] **Step 2: Create Dockerfile for the backend service using python:3.12-slim**
-- [ ] **Step 3: Create docker-compose.yml defining db (PostgreSQL) and backend (FastAPI)**
-- [ ] **Step 4: Verify Dockerfile builds cleanly or config syntax is valid**
-- [ ] **Step 5: Commit scaffolding**
+- [x] **Step 1: Write requirements.txt with pinned dependencies**
+- [x] **Step 2: Create Dockerfile for the backend service using python:3.12-slim**
+- [x] **Step 3: Create docker-compose.yml defining db (PostgreSQL) and backend (FastAPI)**
+- [x] **Step 4: Verify Dockerfile builds cleanly or config syntax is valid**
+- [x] **Step 5: Commit scaffolding**
 
 ```bash
 git add docker-compose.yml backend/Dockerfile backend/requirements.txt backend/.dockerignore .env.example
@@ -59,13 +59,13 @@ git commit -m "feat(backend): add docker-compose and backend container scaffoldi
 - Consumes: Environment variables (`DATABASE_URL`, `API_KEY`).
 - Produces: SQLAlchemy async engine, `ClientModel`, `ReleaseModel`, `ClientSchema`, `ReleaseSchema` exactly matching the SRS Section 5 JSON contract.
 
-- [ ] **Step 1: Write unit tests for Pydantic schemas validating SRS data structures**
-- [ ] **Step 2: Run pytest to verify schema tests fail**
-- [ ] **Step 3: Implement database connection with async SQLAlchemy and SQLite/PostgreSQL URL parsing**
-- [ ] **Step 4: Implement models.py with Client and Release tables**
-- [ ] **Step 5: Implement schemas.py matching SRS contract**
-- [ ] **Step 6: Run pytest to verify tests pass**
-- [ ] **Step 7: Commit database and model layer**
+- [x] **Step 1: Write unit tests for Pydantic schemas validating SRS data structures**
+- [x] **Step 2: Run pytest to verify schema tests fail**
+- [x] **Step 3: Implement database connection with async SQLAlchemy and SQLite/PostgreSQL URL parsing**
+- [x] **Step 4: Implement models.py with Client and Release tables**
+- [x] **Step 5: Implement schemas.py matching SRS contract**
+- [x] **Step 6: Run pytest to verify tests pass**
+- [x] **Step 7: Commit database and model layer**
 
 ```bash
 git add backend/app/ backend/tests/test_schemas.py
@@ -93,13 +93,13 @@ git commit -m "feat(backend): implement models, database connection, and schemas
   - `GET /api/v1/clients/{id}/releases` -> `List[ReleaseSchema]`
   - `POST /api/v1/clients/{id}/toggle-status` -> `{ "client_id": str, "is_online": bool }`
 
-- [ ] **Step 1: Write integration tests for API endpoints in backend/tests/test_api.py**
-- [ ] **Step 2: Run pytest to verify endpoint tests fail**
-- [ ] **Step 3: Implement routers for clients, releases, health, and toggle-status**
-- [ ] **Step 4: Implement seed data generator in backend/app/seed.py with realistic mock clients**
-- [ ] **Step 5: Implement main.py with lifespan hook to auto-create tables and seed data**
-- [ ] **Step 6: Run pytest to verify all backend API tests pass**
-- [ ] **Step 7: Commit backend endpoints and seed system**
+- [x] **Step 1: Write integration tests for API endpoints in backend/tests/test_api.py**
+- [x] **Step 2: Run pytest to verify endpoint tests fail**
+- [x] **Step 3: Implement routers for clients, releases, health, and toggle-status**
+- [x] **Step 4: Implement seed data generator in backend/app/seed.py with realistic mock clients**
+- [x] **Step 5: Implement main.py with lifespan hook to auto-create tables and seed data**
+- [x] **Step 6: Run pytest to verify all backend API tests pass**
+- [x] **Step 7: Commit backend endpoints and seed system**
 
 ```bash
 git add backend/app/ backend/tests/
@@ -124,11 +124,11 @@ git commit -m "feat(backend): add rest api routers, seed data, and tests"
 **Interfaces:**
 - Produces: Working React + Vite + Tailwind compilation and packaging scripts.
 
-- [ ] **Step 1: Create package.json with React, Vite, Tailwind, Electron, electron-builder**
-- [ ] **Step 2: Configure Vite and Tailwind for Electron and React**
-- [ ] **Step 3: Create index.html, index.css, and basic main.tsx**
-- [ ] **Step 4: Run `npm install` and verify `npm run build` succeeds**
-- [ ] **Step 5: Commit frontend scaffolding**
+- [x] **Step 1: Create package.json with React, Vite, Tailwind, Electron, electron-builder**
+- [x] **Step 2: Configure Vite and Tailwind for Electron and React**
+- [x] **Step 3: Create index.html, index.css, and basic main.tsx**
+- [x] **Step 4: Run `npm install` and verify `npm run build` succeeds**
+- [x] **Step 5: Commit frontend scaffolding**
 
 ```bash
 git add frontend/
@@ -149,11 +149,11 @@ git commit -m "feat(frontend): scaffold vite, react, tailwind, and electron stru
 - Produces: Secure contextBridge `window.api` exposing typed IPC methods (`getClients`, `getReleases`, `toggleStatus`, `getSettings`, `saveSettings`, `onClientsUpdated`).
 - Guarantees: NFR-01 (Renderer makes zero HTTP calls), NFR-02 (API Key encrypted with `safeStorage`).
 
-- [ ] **Step 1: Write safeStorage wrapper with fallback for environments where OS keychain is unavailable**
-- [ ] **Step 2: Write typed preload script exposing `window.api`**
-- [ ] **Step 3: Implement electron/main.ts with IPC listeners (`clients:get-all`, `settings:save`, etc.)**
-- [ ] **Step 4: Verify TypeScript compilation passes**
-- [ ] **Step 5: Commit Electron IPC and safeStorage layers**
+- [x] **Step 1: Write safeStorage wrapper with fallback for environments where OS keychain is unavailable**
+- [x] **Step 2: Write typed preload script exposing `window.api`**
+- [x] **Step 3: Implement electron/main.ts with IPC listeners (`clients:get-all`, `settings:save`, etc.)**
+- [x] **Step 4: Verify TypeScript compilation passes**
+- [x] **Step 5: Commit Electron IPC and safeStorage layers**
 
 ```bash
 git add frontend/electron/ frontend/src/types/
@@ -173,12 +173,12 @@ git commit -m "feat(frontend): implement secure ipc main process and safe storag
 - Consumes: Backend HTTP endpoints via Node `fetch` in the main process.
 - Produces: Non-blocking background polling routine with state diffing. Triggers `Notification` on status transition `is_online: true -> false`. Emits `clients:updated` event to the renderer.
 
-- [ ] **Step 1: Write unit tests for polling diff logic and notification triggers**
-- [ ] **Step 2: Run tests to verify they fail**
-- [ ] **Step 3: Implement Poller class with start/stop, configurable interval, error resilience (NFR-04), and state tracking**
-- [ ] **Step 4: Wire Poller into electron/main.ts lifecycle**
-- [ ] **Step 5: Run tests to verify poller diffing passes**
-- [ ] **Step 6: Commit polling engine and notification integration**
+- [x] **Step 1: Write unit tests for polling diff logic and notification triggers**
+- [x] **Step 2: Run tests to verify they fail**
+- [x] **Step 3: Implement Poller class with start/stop, configurable interval, error resilience (NFR-04), and state tracking**
+- [x] **Step 4: Wire Poller into electron/main.ts lifecycle**
+- [x] **Step 5: Run tests to verify poller diffing passes**
+- [x] **Step 6: Commit polling engine and notification integration**
 
 ```bash
 git add frontend/electron/poller.ts frontend/tests/poller.test.ts
@@ -197,7 +197,7 @@ git commit -m "feat(frontend): implement background polling and native notificat
 - Create: `frontend/src/components/ClientDetailModal.tsx`
 - Create: `frontend/src/components/SettingsModal.tsx`
 - Create: `frontend/src/App.tsx`
-- Test: `frontend/tests/FilterBar.test.tsx`
+- Test: `frontend/tests/filterLogic.test.ts`
 
 **Interfaces:**
 - Consumes: `window.api` IPC methods.
@@ -208,13 +208,13 @@ git commit -m "feat(frontend): implement background polling and native notificat
   - Release history modal displaying changelogs.
   - Settings modal for configuring backend URL, API key, and polling interval.
 
-- [ ] **Step 1: Create TypeScript models matching the SRS Section 5 JSON contract**
-- [ ] **Step 2: Create UI components: Navbar, FilterBar, ClientCard, ClientDetailModal, SettingsModal**
-- [ ] **Step 3: Implement App.tsx connecting components with real-time IPC updates and graceful error states**
-- [ ] **Step 4: Write tests for filtering logic**
-- [ ] **Step 5: Run frontend test suite to ensure all tests pass**
-- [ ] **Step 6: Verify TypeScript and Vite production build (`npm run build`)**
-- [ ] **Step 7: Commit UI dashboard and components**
+- [x] **Step 1: Create TypeScript models matching the SRS Section 5 JSON contract**
+- [x] **Step 2: Create UI components: Navbar, FilterBar, ClientCard, ClientDetailModal, SettingsModal**
+- [x] **Step 3: Implement App.tsx connecting components with real-time IPC updates and graceful error states**
+- [x] **Step 4: Write tests for filtering logic**
+- [x] **Step 5: Run frontend test suite to ensure all tests pass**
+- [x] **Step 6: Verify TypeScript and Vite production build (`npm run build`)**
+- [x] **Step 7: Commit UI dashboard and components**
 
 ```bash
 git add frontend/src/ frontend/tests/
@@ -236,12 +236,12 @@ git commit -m "feat(frontend): implement dashboard ui, roster, filters, and moda
   - `./scripts/start.sh` (or `npm start`): starts backend & desktop app, intercepts Ctrl+C (SIGINT/SIGTERM), cleanly kills background processes and containers.
   - `./scripts/build-appimage.sh` (or `npm run package:appimage`): builds production Linux AppImage executable in `release/`.
 
-- [ ] **Step 1: Implement scripts/start.sh with signal traps for SIGINT and SIGTERM**
-- [ ] **Step 2: Configure electron-builder in frontend for Linux AppImage output**
-- [ ] **Step 3: Implement scripts/build-appimage.sh**
-- [ ] **Step 4: Make scripts executable (`chmod +x scripts/*.sh`)**
-- [ ] **Step 5: Test start script and AppImage build configuration**
-- [ ] **Step 6: Commit lifecycle scripts and packaging config**
+- [x] **Step 1: Implement scripts/start.sh with signal traps for SIGINT and SIGTERM**
+- [x] **Step 2: Configure electron-builder in frontend for Linux AppImage output**
+- [x] **Step 3: Implement scripts/build-appimage.sh**
+- [x] **Step 4: Make scripts executable (`chmod +x scripts/*.sh`)**
+- [x] **Step 5: Test start script and AppImage build configuration**
+- [x] **Step 6: Commit lifecycle scripts and packaging config**
 
 ```bash
 git add scripts/ package.json frontend/package.json
@@ -252,8 +252,8 @@ git commit -m "feat(ops): add clean start/stop script and AppImage build pipelin
 
 ### Task 9: Full System Verification & Health Check
 
-- [ ] **Step 1: Run backend test suite**
-- [ ] **Step 2: Run frontend test suite & production bundle build**
-- [ ] **Step 3: Verify compilation across the entire stack**
-- [ ] **Step 4: Verify AppImage packaging generates or verifies correctly**
-- [ ] **Step 5: Final git commit and branch wrap-up**
+- [x] **Step 1: Run backend test suite**
+- [x] **Step 2: Run frontend test suite & production bundle build**
+- [x] **Step 3: Verify compilation across the entire stack**
+- [x] **Step 4: Verify AppImage packaging generates or verifies correctly**
+- [x] **Step 5: Final git commit and branch wrap-up**
