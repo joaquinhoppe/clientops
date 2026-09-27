@@ -1,6 +1,12 @@
 # Environment & Credentials
 .env
-*.env.local
+*.env.*
+*.local
+*.pem
+*.key
+*.crt
+*.cert
+*.pfx
 
 # Python
 __pycache__/

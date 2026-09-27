@@ -15,7 +15,7 @@ export default function App() {
   const [healthFilter, setHealthFilter] = useState<HealthFilter>('all');
   const [billingFilter, setBillingFilter] = useState<BillingFilter>('all');
 
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
@@ -24,7 +24,13 @@ export default function App() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [togglingClientId, setTogglingClientId] = useState<string | null>(null);
 
-  // Load clients
+  // Derive active selected client from clients list; eliminates stale closures and race conditions
+  const selectedClient = useMemo(() => {
+    if (!selectedClientId) return null;
+    return clients.find((c) => c.client_id === selectedClientId) || null;
+  }, [clients, selectedClientId]);
+
+  // Load clients with stable callback
   const loadClients = useCallback(async () => {
     setIsRefreshing(true);
     try {
@@ -32,11 +38,6 @@ export default function App() {
         const data = await window.api.getClients();
         if (Array.isArray(data)) {
           setClients(data);
-          // Also update selected client if open
-          if (selectedClient) {
-            const fresh = data.find((c) => c.client_id === selectedClient.client_id);
-            if (fresh) setSelectedClient(fresh);
-          }
         }
       }
     } catch (err) {
@@ -44,7 +45,7 @@ export default function App() {
     } finally {
       setIsRefreshing(false);
     }
-  }, [selectedClient]);
+  }, []);
 
   useEffect(() => {
     // Initial fetch
@@ -59,10 +60,6 @@ export default function App() {
         unsubscribeUpdates = window.api.onClientsUpdated((updatedClients: Client[]) => {
           if (Array.isArray(updatedClients)) {
             setClients(updatedClients);
-            setSelectedClient((current) => {
-              if (!current) return null;
-              return updatedClients.find((c) => c.client_id === current.client_id) || current;
-            });
           }
         });
       }
@@ -79,6 +76,17 @@ export default function App() {
       unsubscribeConnection();
     };
   }, [loadClients]);
+
+  // Press Escape to return to roster
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedClientId(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Handle status toggle (testing FR-05)
   const handleToggleStatus = async (clientId: string) => {
@@ -118,8 +126,8 @@ export default function App() {
       if (window.api?.deleteClient) {
         await window.api.deleteClient(client.client_id);
         await loadClients();
-        if (selectedClient?.client_id === client.client_id) {
-          setSelectedClient(null);
+        if (selectedClientId === client.client_id) {
+          setSelectedClientId(null);
         }
       }
     } catch (err) {
@@ -140,7 +148,8 @@ export default function App() {
         onRefresh={loadClients}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenCreateClient={handleOpenCreateClient}
-        onGoHome={() => setSelectedClient(null)}
+        onGoHome={() => setSelectedClientId(null)}
+        selectedClientName={selectedClient?.name || null}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
@@ -169,7 +178,7 @@ export default function App() {
           /* Dedicated Client Page */
           <ClientDetailPage
             client={selectedClient}
-            onBack={() => setSelectedClient(null)}
+            onBack={() => setSelectedClientId(null)}
             onEditClient={handleEditClient}
             onToggleStatus={handleToggleStatus}
             isToggling={togglingClientId === selectedClient.client_id}
@@ -196,7 +205,7 @@ export default function App() {
                   <ClientCard
                     key={client.client_id}
                     client={client}
-                    onSelectClient={setSelectedClient}
+                    onSelectClient={(c) => setSelectedClientId(c.client_id)}
                     onEditClient={handleEditClient}
                     onDeleteClient={handleDeleteClient}
                     onToggleStatus={handleToggleStatus}

@@ -340,6 +340,7 @@ export const ClientDetailPage: React.FC<ClientDetailPageProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div className="flex items-center space-x-3">
           <button
+            type="button"
             onClick={onBack}
             className="flex items-center space-x-1.5 rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700 hover:text-white transition"
           >
@@ -1079,6 +1080,22 @@ export const ClientDetailPage: React.FC<ClientDetailPageProps> = ({
               ))}
             </div>
           )}
+
+          {/* Bottom Navigation */}
+          <div className="flex items-center justify-between border-t border-slate-800 pt-6 mt-4">
+            <button
+              type="button"
+              onClick={onBack}
+              className="flex items-center space-x-1.5 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-700 hover:text-white transition"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Clients Roster</span>
+            </button>
+
+            <span className="text-xs text-slate-500">
+              Tip: Press <kbd className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-300 border border-slate-700">Esc</kbd> anytime to return to roster
+            </span>
+          </div>
         </div>
       )}
     </div>
