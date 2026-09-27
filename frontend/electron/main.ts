@@ -1,12 +1,20 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
-import path from 'path';
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { loadSettings, saveSettings } from './safeStorage';
 import { BackgroundPoller } from './poller';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 let mainWindow: BrowserWindow | null = null;
 let poller: BackgroundPoller | null = null;
 
 function createWindow() {
+  const preloadPath = fs.existsSync(path.join(__dirname, 'preload.mjs'))
+    ? path.join(__dirname, 'preload.mjs')
+    : path.join(__dirname, 'preload.js');
+
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 840,
@@ -15,7 +23,7 @@ function createWindow() {
     title: 'ClientOps - Web Clients Monitoring',
     backgroundColor: '#0f172a',
     webPreferences: {
-      preload: path.join(__dirname, 'preload.mjs'),
+      preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false,
     },
