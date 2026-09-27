@@ -10,6 +10,24 @@
     "test": "vitest run",
     "package:appimage": "npm run build && electron-builder --linux AppImage"
   },
+  "build": {
+    "appId": "com.clientops.dashboard",
+    "productName": "ClientOps",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ],
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Development",
+      "artifactName": "${productName}-${version}.${ext}"
+    }
+  },
   "dependencies": {
     "lucide-react": "^1.16.0",
     "react": "^18.3.1",
