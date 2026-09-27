@@ -23,9 +23,38 @@ export interface Client {
   software: ClientSoftware;
 }
 
+export interface ClientCreateInput {
+  name: string;
+  project_url: string;
+  is_online?: boolean;
+  total_due?: number;
+  currency?: string;
+  billing_status?: string;
+  current_version?: string;
+  last_update?: string;
+}
+
+export interface ClientUpdateInput {
+  name?: string;
+  project_url?: string;
+  is_online?: boolean;
+  total_due?: number;
+  currency?: string;
+  billing_status?: string;
+  current_version?: string;
+  last_update?: string;
+}
+
 export interface Release {
+  id?: number;
   version: string;
   release_date: string;
+  changelog: string[];
+}
+
+export interface ReleaseCreateInput {
+  version: string;
+  release_date?: string;
   changelog: string[];
 }
 

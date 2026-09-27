@@ -24,11 +24,37 @@ class ClientSchema(BaseModel):
     billing: ClientBilling
     software: ClientSoftware
 
+class ClientCreateSchema(BaseModel):
+    name: str
+    project_url: str
+    is_online: bool = True
+    total_due: float = 0.0
+    currency: str = "USD"
+    billing_status: str = "paid"
+    current_version: str = "v1.0.0"
+    last_update: str | None = None
+
+class ClientUpdateSchema(BaseModel):
+    name: str | None = None
+    project_url: str | None = None
+    is_online: bool | None = None
+    total_due: float | None = None
+    currency: str | None = None
+    billing_status: str | None = None
+    current_version: str | None = None
+    last_update: str | None = None
+
 class ReleaseSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    id: int | None = None
     version: str
     release_date: str
+    changelog: list[str] = Field(default_factory=list)
+
+class ReleaseCreateSchema(BaseModel):
+    version: str
+    release_date: str | None = None
     changelog: list[str] = Field(default_factory=list)
 
 class ToggleStatusResponse(BaseModel):

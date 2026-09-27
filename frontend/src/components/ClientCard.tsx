@@ -1,10 +1,12 @@
 import React from 'react';
-import { ExternalLink, CheckCircle2, AlertOctagon, Tag, History, Power } from 'lucide-react';
+import { ExternalLink, CheckCircle2, AlertOctagon, Tag, History, Power, Edit3, Trash2 } from 'lucide-react';
 import { Client } from '../types';
 
 interface ClientCardProps {
   client: Client;
   onSelectClient: (client: Client) => void;
+  onEditClient: (client: Client) => void;
+  onDeleteClient: (client: Client) => void;
   onToggleStatus: (clientId: string) => void;
   isToggling: boolean;
 }
@@ -12,6 +14,8 @@ interface ClientCardProps {
 export const ClientCard: React.FC<ClientCardProps> = ({
   client,
   onSelectClient,
+  onEditClient,
+  onDeleteClient,
   onToggleStatus,
   isToggling,
 }) => {
@@ -28,7 +32,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       }`}
     >
       <div>
-        {/* Header: Name and Status Badge (FR-01, FR-02) */}
+        {/* Header: Name, Status Badge, Edit & Delete Actions */}
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-base font-semibold text-white group-hover:text-emerald-400 transition">
@@ -45,24 +49,45 @@ export const ClientCard: React.FC<ClientCardProps> = ({
             </a>
           </div>
 
-          <div
-            className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
-              isOnline
-                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                : 'bg-rose-500/15 text-rose-400 border border-rose-500/30 animate-pulse'
-            }`}
-          >
-            {isOnline ? (
-              <>
-                <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-                ONLINE
-              </>
-            ) : (
-              <>
-                <AlertOctagon className="mr-1 h-3.5 w-3.5" />
-                OFFLINE
-              </>
-            )}
+          <div className="flex items-center space-x-1.5 shrink-0">
+            {/* Health status badge */}
+            <div
+              className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
+                isOnline
+                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                  : 'bg-rose-500/15 text-rose-400 border border-rose-500/30 animate-pulse'
+              }`}
+            >
+              {isOnline ? (
+                <>
+                  <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+                  ONLINE
+                </>
+              ) : (
+                <>
+                  <AlertOctagon className="mr-1 h-3.5 w-3.5" />
+                  OFFLINE
+                </>
+              )}
+            </div>
+
+            {/* Edit button */}
+            <button
+              onClick={() => onEditClient(client)}
+              title="Edit Client"
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition"
+            >
+              <Edit3 className="h-3.5 w-3.5" />
+            </button>
+
+            {/* Delete button */}
+            <button
+              onClick={() => onDeleteClient(client)}
+              title="Delete Client"
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-950/40 hover:text-rose-400 transition"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
 

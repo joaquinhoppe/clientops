@@ -1,11 +1,12 @@
 import React from 'react';
-import { LayoutDashboard, Settings as SettingsIcon, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { LayoutDashboard, Settings as SettingsIcon, RefreshCw, Wifi, WifiOff, Plus } from 'lucide-react';
 
 interface NavbarProps {
   isConnected: boolean;
   isRefreshing: boolean;
   onRefresh: () => void;
   onOpenSettings: () => void;
+  onOpenCreateClient: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -13,6 +14,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   isRefreshing,
   onRefresh,
   onOpenSettings,
+  onOpenCreateClient,
 }) => {
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-800 bg-slate-900/90 px-6 backdrop-blur">
@@ -51,6 +53,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             </>
           )}
         </div>
+
+        {/* Add New Client Button */}
+        <button
+          onClick={onOpenCreateClient}
+          title="Register a new web client"
+          className="flex items-center space-x-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-white shadow-md shadow-emerald-600/20 transition"
+        >
+          <Plus className="h-4 w-4" />
+          <span>New Client</span>
+        </button>
 
         {/* Manual Refresh Button */}
         <button

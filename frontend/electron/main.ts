@@ -99,6 +99,103 @@ ipcMain.handle('clients:toggle-status', async (_event, { clientId }) => {
   }
 });
 
+ipcMain.handle('clients:create', async (_event, clientData) => {
+  const settings = loadSettings();
+  const url = `${settings.apiUrl.replace(/\/$/, '')}/api/v1/clients`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': settings.apiKey,
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(clientData),
+  });
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`HTTP ${res.status}: ${errorText}`);
+  }
+  const created = await res.json();
+  await poller?.pollOnce();
+  return created;
+});
+
+ipcMain.handle('clients:update', async (_event, { clientId, data }) => {
+  const settings = loadSettings();
+  const url = `${settings.apiUrl.replace(/\/$/, '')}/api/v1/clients/${clientId}`;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': settings.apiKey,
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`HTTP ${res.status}: ${errorText}`);
+  }
+  const updated = await res.json();
+  await poller?.pollOnce();
+  return updated;
+});
+
+ipcMain.handle('clients:delete', async (_event, { clientId }) => {
+  const settings = loadSettings();
+  const url = `${settings.apiUrl.replace(/\/$/, '')}/api/v1/clients/${clientId}`;
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      'X-API-Key': settings.apiKey,
+    },
+  });
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`HTTP ${res.status}: ${errorText}`);
+  }
+  await poller?.pollOnce();
+  return true;
+});
+
+ipcMain.handle('releases:create', async (_event, { clientId, data }) => {
+  const settings = loadSettings();
+  const url = `${settings.apiUrl.replace(/\/$/, '')}/api/v1/clients/${clientId}/releases`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': settings.apiKey,
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`HTTP ${res.status}: ${errorText}`);
+  }
+  const createdRelease = await res.json();
+  await poller?.pollOnce();
+  return createdRelease;
+});
+
+ipcMain.handle('releases:delete', async (_event, { clientId, releaseId }) => {
+  const settings = loadSettings();
+  const url = `${settings.apiUrl.replace(/\/$/, '')}/api/v1/clients/${clientId}/releases/${releaseId}`;
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      'X-API-Key': settings.apiKey,
+    },
+  });
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`HTTP ${res.status}: ${errorText}`);
+  }
+  await poller?.pollOnce();
+  return true;
+});
+
 ipcMain.handle('settings:get', async () => {
   return loadSettings();
 });

@@ -3,6 +3,7 @@ import { Navbar } from './components/Navbar';
 import { FilterBar } from './components/FilterBar';
 import { ClientCard } from './components/ClientCard';
 import { ClientDetailModal } from './components/ClientDetailModal';
+import { ClientFormModal } from './components/ClientFormModal';
 import { SettingsModal } from './components/SettingsModal';
 import { filterClients } from './utils/filterLogic';
 import { Client, HealthFilter, BillingFilter } from './types';
@@ -16,6 +17,9 @@ export default function App() {
 
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+
   const [isConnected, setIsConnected] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [togglingClientId, setTogglingClientId] = useState<string | null>(null);
@@ -28,6 +32,11 @@ export default function App() {
         const data = await window.api.getClients();
         if (Array.isArray(data)) {
           setClients(data);
+          // Also update selected client if open
+          if (selectedClient) {
+            const fresh = data.find((c) => c.client_id === selectedClient.client_id);
+            if (fresh) setSelectedClient(fresh);
+          }
         }
       }
     } catch (err) {
@@ -35,7 +44,7 @@ export default function App() {
     } finally {
       setIsRefreshing(false);
     }
-  }, []);
+  }, [selectedClient]);
 
   useEffect(() => {
     // Initial fetch
@@ -82,6 +91,38 @@ export default function App() {
     }
   };
 
+  // Open Create Client modal
+  const handleOpenCreateClient = () => {
+    setEditingClient(null);
+    setIsFormModalOpen(true);
+  };
+
+  // Open Edit Client modal
+  const handleEditClient = (client: Client) => {
+    setEditingClient(client);
+    setIsFormModalOpen(true);
+  };
+
+  // Delete client
+  const handleDeleteClient = async (client: Client) => {
+    const confirmed = confirm(
+      `Are you sure you want to permanently delete "${client.name}" and all associated releases?`
+    );
+    if (!confirmed) return;
+
+    try {
+      if (window.api?.deleteClient) {
+        await window.api.deleteClient(client.client_id);
+        await loadClients();
+        if (selectedClient?.client_id === client.client_id) {
+          setSelectedClient(null);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to delete client:', err);
+    }
+  };
+
   // Filtered clients list
   const filteredClients = useMemo(() => {
     return filterClients(clients, searchQuery, healthFilter, billingFilter);
@@ -94,6 +135,7 @@ export default function App() {
         isRefreshing={isRefreshing}
         onRefresh={loadClients}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenCreateClient={handleOpenCreateClient}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
@@ -137,6 +179,8 @@ export default function App() {
                 key={client.client_id}
                 client={client}
                 onSelectClient={setSelectedClient}
+                onEditClient={handleEditClient}
+                onDeleteClient={handleDeleteClient}
                 onToggleStatus={handleToggleStatus}
                 isToggling={togglingClientId === client.client_id}
               />
@@ -147,10 +191,16 @@ export default function App() {
             {clients.length === 0 ? (
               <>
                 <Inbox className="h-10 w-10 text-slate-600 mb-3" />
-                <h3 className="text-sm font-semibold text-slate-300">No Clients Found</h3>
+                <h3 className="text-sm font-semibold text-slate-300">No Clients Registered</h3>
                 <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                  Waiting for initial data from backend API. Make sure the backend server is running.
+                  Get started by creating your first client deployment.
                 </p>
+                <button
+                  onClick={handleOpenCreateClient}
+                  className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500 transition"
+                >
+                  Create Client
+                </button>
               </>
             ) : (
               <>
@@ -179,6 +229,15 @@ export default function App() {
       <ClientDetailModal
         client={selectedClient}
         onClose={() => setSelectedClient(null)}
+        onClientUpdated={loadClients}
+      />
+
+      {/* Create / Edit Client Modal */}
+      <ClientFormModal
+        isOpen={isFormModalOpen}
+        client={editingClient}
+        onClose={() => setIsFormModalOpen(false)}
+        onSaved={loadClients}
       />
 
       {/* Settings Modal (NFR-02) */}
