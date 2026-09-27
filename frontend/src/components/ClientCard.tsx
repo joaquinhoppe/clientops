@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExternalLink, CheckCircle2, AlertOctagon, Tag, History, Power, Edit3, Trash2 } from 'lucide-react';
+import { ExternalLink, CheckCircle2, AlertOctagon, Tag, Power, Edit3, Trash2, ArrowRight } from 'lucide-react';
 import { Client } from '../types';
 
 interface ClientCardProps {
@@ -35,9 +35,12 @@ export const ClientCard: React.FC<ClientCardProps> = ({
         {/* Header: Name, Status Badge, Edit & Delete Actions */}
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <h3 className="truncate text-base font-semibold text-white group-hover:text-emerald-400 transition">
+            <button
+              onClick={() => onSelectClient(client)}
+              className="text-left font-semibold text-white group-hover:text-emerald-400 transition truncate max-w-full block text-base"
+            >
               {client.name}
-            </h3>
+            </button>
             <a
               href={client.project_url}
               target="_blank"
@@ -119,6 +122,19 @@ export const ClientCard: React.FC<ClientCardProps> = ({
               }).format(client.billing.total_due)}
             </span>
           </div>
+
+          <div className="mt-2 flex items-center justify-between border-t border-slate-800/80 pt-2 text-[11px] text-slate-400">
+            <span>Retainer / Cycle</span>
+            <span className="font-medium text-slate-200">
+              {client.billing.recurring_amount > 0 ? (
+                <>
+                  ${client.billing.recurring_amount}/mo · Day {client.billing.payment_due_day || 1}
+                </>
+              ) : (
+                <span className="text-slate-500">Not set</span>
+              )}
+            </span>
+          </div>
         </div>
 
         {/* Software Version Info (FR-04) */}
@@ -150,13 +166,13 @@ export const ClientCard: React.FC<ClientCardProps> = ({
           <span>{isOnline ? 'Test Offline' : 'Set Online'}</span>
         </button>
 
-        {/* View Releases Modal (FR-04) */}
+        {/* Open Dedicated Client Management Page */}
         <button
           onClick={() => onSelectClient(client)}
-          className="flex items-center space-x-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-slate-700 hover:text-white"
+          className="flex items-center space-x-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300 transition hover:bg-emerald-500/20 hover:text-white"
         >
-          <History className="h-3.5 w-3.5 text-slate-400" />
-          <span>Releases</span>
+          <span>Manage & Notes</span>
+          <ArrowRight className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>

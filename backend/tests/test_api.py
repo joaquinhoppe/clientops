@@ -135,4 +135,65 @@ async def test_create_update_delete_client():
         get_res = await ac.get(f"/api/v1/clients/{cid}", headers=headers)
         assert get_res.status_code == 404
 
+@pytest.mark.asyncio
+async def test_client_notes_and_payments():
+    transport = ASGITransport(app=app)
+    headers = {"X-API-Key": settings.API_KEY}
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # Get first client
+        res = await ac.get("/api/v1/clients", headers=headers)
+        cid = res.json()[0]["client_id"]
+
+        # 1. Add Note
+        note_res = await ac.post(
+            f"/api/v1/clients/{cid}/notes",
+            headers=headers,
+            json={"title": "Client Meeting", "content": "Discussed monthly payment schedule and v3 launch."}
+        )
+        assert note_res.status_code == 201
+        note_data = note_res.json()
+        assert note_data["title"] == "Client Meeting"
+        nid = note_data["id"]
+
+        # Fetch Notes
+        notes_list_res = await ac.get(f"/api/v1/clients/{cid}/notes", headers=headers)
+        assert notes_list_res.status_code == 200
+        assert len(notes_list_res.json()) >= 1
+
+        # Delete Note
+        del_note_res = await ac.delete(f"/api/v1/clients/{cid}/notes/{nid}", headers=headers)
+        assert del_note_res.status_code == 204
+
+        # 2. Add Payment / Invoice
+        pay_res = await ac.post(
+            f"/api/v1/clients/{cid}/payments",
+            headers=headers,
+            json={
+                "amount": 500.0,
+                "currency": "USD",
+                "due_date": "2026-10-05",
+                "status": "unpaid",
+                "notes": "October maintenance retainer"
+            }
+        )
+        assert pay_res.status_code == 201
+        pay_data = pay_res.json()
+        assert pay_data["amount"] == 500.0
+        pid = pay_data["id"]
+
+        # Mark Paid
+        put_pay_res = await ac.put(
+            f"/api/v1/clients/{cid}/payments/{pid}",
+            headers=headers,
+            json={"status": "paid"}
+        )
+        assert put_pay_res.status_code == 200
+        assert put_pay_res.json()["status"] == "paid"
+        assert put_pay_res.json()["paid_at"] is not None
+
+        # Delete Payment
+        del_pay_res = await ac.delete(f"/api/v1/clients/{cid}/payments/{pid}", headers=headers)
+        assert del_pay_res.status_code == 204
+
+
 

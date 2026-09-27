@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base, AsyncSessionLocal
 from app.seed import seed_database
-from app.routers import health, clients, releases
+from app.routers import health, clients, releases, notes, payments
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -35,3 +35,5 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(clients.router)
 app.include_router(releases.router)
+app.include_router(notes.router)
+app.include_router(payments.router)

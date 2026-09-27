@@ -23,7 +23,8 @@ async def get_client_releases(client_id: str, db: AsyncSession = Depends(get_db)
             id=r.id,
             version=r.version,
             release_date=r.release_date,
-            changelog=r.changelog
+            changelog=r.changelog,
+            cost=r.cost or 0.0
         )
         for r in releases
     ]
@@ -41,7 +42,8 @@ async def create_client_release(client_id: str, payload: ReleaseCreateSchema, db
         client_id=client_id,
         version=payload.version.strip(),
         release_date=release_date,
-        changelog_raw=json.dumps(payload.changelog)
+        changelog_raw=json.dumps(payload.changelog),
+        cost=float(payload.cost or 0.0)
     )
     db.add(release)
 
@@ -56,7 +58,8 @@ async def create_client_release(client_id: str, payload: ReleaseCreateSchema, db
         id=release.id,
         version=release.version,
         release_date=release.release_date,
-        changelog=release.changelog
+        changelog=release.changelog,
+        cost=release.cost
     )
 
 @router.delete("/{client_id}/releases/{release_id}", status_code=status.HTTP_204_NO_CONTENT)

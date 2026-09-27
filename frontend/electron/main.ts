@@ -196,6 +196,113 @@ ipcMain.handle('releases:delete', async (_event, { clientId, releaseId }) => {
   return true;
 });
 
+// Client Notes IPC Handlers
+ipcMain.handle('notes:get', async (_event, { clientId }) => {
+  const settings = loadSettings();
+  const url = `${settings.apiUrl.replace(/\/$/, '')}/api/v1/clients/${clientId}/notes`;
+  const res = await fetch(url, {
+    headers: {
+      'X-API-Key': settings.apiKey,
+      'Accept': 'application/json',
+    },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.json();
+});
+
+ipcMain.handle('notes:create', async (_event, { clientId, data }) => {
+  const settings = loadSettings();
+  const url = `${settings.apiUrl.replace(/\/$/, '')}/api/v1/clients/${clientId}/notes`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': settings.apiKey,
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.json();
+});
+
+ipcMain.handle('notes:delete', async (_event, { clientId, noteId }) => {
+  const settings = loadSettings();
+  const url = `${settings.apiUrl.replace(/\/$/, '')}/api/v1/clients/${clientId}/notes/${noteId}`;
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      'X-API-Key': settings.apiKey,
+    },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return true;
+});
+
+// Client Payments IPC Handlers
+ipcMain.handle('payments:get', async (_event, { clientId }) => {
+  const settings = loadSettings();
+  const url = `${settings.apiUrl.replace(/\/$/, '')}/api/v1/clients/${clientId}/payments`;
+  const res = await fetch(url, {
+    headers: {
+      'X-API-Key': settings.apiKey,
+      'Accept': 'application/json',
+    },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.json();
+});
+
+ipcMain.handle('payments:create', async (_event, { clientId, data }) => {
+  const settings = loadSettings();
+  const url = `${settings.apiUrl.replace(/\/$/, '')}/api/v1/clients/${clientId}/payments`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': settings.apiKey,
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const created = await res.json();
+  await poller?.pollOnce();
+  return created;
+});
+
+ipcMain.handle('payments:update', async (_event, { clientId, paymentId, data }) => {
+  const settings = loadSettings();
+  const url = `${settings.apiUrl.replace(/\/$/, '')}/api/v1/clients/${clientId}/payments/${paymentId}`;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': settings.apiKey,
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const updated = await res.json();
+  await poller?.pollOnce();
+  return updated;
+});
+
+ipcMain.handle('payments:delete', async (_event, { clientId, paymentId }) => {
+  const settings = loadSettings();
+  const url = `${settings.apiUrl.replace(/\/$/, '')}/api/v1/clients/${clientId}/payments/${paymentId}`;
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      'X-API-Key': settings.apiKey,
+    },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  await poller?.pollOnce();
+  return true;
+});
+
 ipcMain.handle('settings:get', async () => {
   return loadSettings();
 });

@@ -7,6 +7,8 @@ export interface ClientBilling {
   total_due: number;
   currency: string;
   status: 'paid' | 'overdue' | 'pending' | string;
+  payment_due_day: number;
+  recurring_amount: number;
 }
 
 export interface ClientSoftware {
@@ -30,6 +32,8 @@ export interface ClientCreateInput {
   total_due?: number;
   currency?: string;
   billing_status?: string;
+  payment_due_day?: number;
+  recurring_amount?: number;
   current_version?: string;
   last_update?: string;
 }
@@ -41,6 +45,8 @@ export interface ClientUpdateInput {
   total_due?: number;
   currency?: string;
   billing_status?: string;
+  payment_due_day?: number;
+  recurring_amount?: number;
   current_version?: string;
   last_update?: string;
 }
@@ -50,12 +56,47 @@ export interface Release {
   version: string;
   release_date: string;
   changelog: string[];
+  cost?: number;
 }
 
 export interface ReleaseCreateInput {
   version: string;
   release_date?: string;
   changelog: string[];
+  cost?: number;
+}
+
+export interface ClientNote {
+  id: number;
+  client_id: string;
+  title: string;
+  content: string;
+  created_at: string;
+}
+
+export interface ClientNoteCreateInput {
+  title?: string;
+  content: string;
+}
+
+export interface Payment {
+  id: number;
+  client_id: string;
+  amount: number;
+  currency: string;
+  due_date: string;
+  status: 'paid' | 'unpaid' | 'overdue' | string;
+  paid_at?: string | null;
+  notes?: string;
+}
+
+export interface PaymentCreateInput {
+  amount: number;
+  currency?: string;
+  due_date: string;
+  status?: string;
+  paid_at?: string | null;
+  notes?: string;
 }
 
 export interface AppSettings {

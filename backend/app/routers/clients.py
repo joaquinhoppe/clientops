@@ -30,7 +30,9 @@ def serialize_client(c: Client) -> ClientSchema:
         billing=ClientBilling(
             total_due=c.total_due,
             currency=c.currency,
-            status=c.billing_status
+            status=c.billing_status,
+            payment_due_day=c.payment_due_day or 1,
+            recurring_amount=c.recurring_amount or 0.0
         ),
         software=ClientSoftware(
             current_version=c.current_version,
@@ -59,6 +61,8 @@ async def create_client(payload: ClientCreateSchema, db: AsyncSession = Depends(
         total_due=float(payload.total_due),
         currency=payload.currency.upper(),
         billing_status=payload.billing_status.lower(),
+        payment_due_day=int(payload.payment_due_day or 1),
+        recurring_amount=float(payload.recurring_amount or 0.0),
         current_version=payload.current_version.strip(),
         last_update=last_update
     )
@@ -94,6 +98,10 @@ async def update_client(client_id: str, payload: ClientUpdateSchema, db: AsyncSe
         client.currency = payload.currency.upper()
     if payload.billing_status is not None:
         client.billing_status = payload.billing_status.lower()
+    if payload.payment_due_day is not None:
+        client.payment_due_day = int(payload.payment_due_day)
+    if payload.recurring_amount is not None:
+        client.recurring_amount = float(payload.recurring_amount)
     if payload.current_version is not None:
         client.current_version = payload.current_version.strip()
     if payload.last_update is not None:

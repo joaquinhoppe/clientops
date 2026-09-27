@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Building2, Globe, DollarSign, Tag, CheckCircle2, AlertOctagon, Save } from 'lucide-react';
+import { X, Building2, Globe, DollarSign, Tag, CheckCircle2, AlertOctagon, Save, Calendar } from 'lucide-react';
 import { Client, ClientCreateInput, ClientUpdateInput } from '../types';
 
 interface ClientFormModalProps {
@@ -21,6 +21,8 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
   const [totalDue, setTotalDue] = useState('0');
   const [currency, setCurrency] = useState('USD');
   const [billingStatus, setBillingStatus] = useState('paid');
+  const [paymentDueDay, setPaymentDueDay] = useState('1');
+  const [recurringAmount, setRecurringAmount] = useState('0');
   const [currentVersion, setCurrentVersion] = useState('v1.0.0');
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -35,6 +37,8 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
       setTotalDue(client.billing?.total_due?.toString() || '0');
       setCurrency(client.billing?.currency || 'USD');
       setBillingStatus(client.billing?.status || 'paid');
+      setPaymentDueDay(client.billing?.payment_due_day?.toString() || '1');
+      setRecurringAmount(client.billing?.recurring_amount?.toString() || '0');
       setCurrentVersion(client.software?.current_version || 'v1.0.0');
     } else {
       setName('');
@@ -43,6 +47,8 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
       setTotalDue('0');
       setCurrency('USD');
       setBillingStatus('paid');
+      setPaymentDueDay('1');
+      setRecurringAmount('0');
       setCurrentVersion('v1.0.0');
     }
     setErrorMessage('');
@@ -64,6 +70,8 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
           total_due: parseFloat(totalDue) || 0,
           currency: currency.trim().toUpperCase(),
           billing_status: billingStatus.toLowerCase(),
+          payment_due_day: Math.min(31, Math.max(1, parseInt(paymentDueDay, 10) || 1)),
+          recurring_amount: parseFloat(recurringAmount) || 0,
           current_version: currentVersion.trim(),
         };
 
@@ -78,6 +86,8 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
           total_due: parseFloat(totalDue) || 0,
           currency: currency.trim().toUpperCase(),
           billing_status: billingStatus.toLowerCase(),
+          payment_due_day: Math.min(31, Math.max(1, parseInt(paymentDueDay, 10) || 1)),
+          recurring_amount: parseFloat(recurringAmount) || 0,
           current_version: currentVersion.trim(),
         };
 
@@ -200,6 +210,41 @@ export const ClientFormModal: React.FC<ClientFormModalProps> = ({
                 onChange={(e) => setCurrentVersion(e.target.value)}
                 placeholder="v1.0.0"
                 className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-mono text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+            </div>
+          </div>
+
+          {/* Recurring Retainer & Payment Due Day */}
+          <div className="grid grid-cols-2 gap-3 pt-1 border-t border-slate-800">
+            <div>
+              <label className="flex items-center text-xs font-semibold text-slate-300 mb-1">
+                <DollarSign className="mr-1 h-3.5 w-3.5 text-emerald-400" />
+                Monthly Recurring Value ($)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={recurringAmount}
+                onChange={(e) => setRecurringAmount(e.target.value)}
+                placeholder="e.g. 1500.00"
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              />
+            </div>
+
+            <div>
+              <label className="flex items-center text-xs font-semibold text-slate-300 mb-1">
+                <Calendar className="mr-1 h-3.5 w-3.5 text-emerald-400" />
+                Payment Due Day (1 - 31)
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="31"
+                value={paymentDueDay}
+                onChange={(e) => setPaymentDueDay(e.target.value)}
+                placeholder="e.g. 5"
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               />
             </div>
           </div>

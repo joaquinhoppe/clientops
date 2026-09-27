@@ -7,6 +7,7 @@ interface NavbarProps {
   onRefresh: () => void;
   onOpenSettings: () => void;
   onOpenCreateClient: () => void;
+  onGoHome?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -15,16 +16,21 @@ export const Navbar: React.FC<NavbarProps> = ({
   onRefresh,
   onOpenSettings,
   onOpenCreateClient,
+  onGoHome,
 }) => {
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-800 bg-slate-900/90 px-6 backdrop-blur">
-      <div className="flex items-center space-x-3">
+      <div
+        className="flex items-center space-x-3 cursor-pointer select-none"
+        onClick={onGoHome}
+        title="Go to Clients Roster"
+      >
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 text-white shadow-lg shadow-emerald-500/20">
           <LayoutDashboard className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-lg font-bold tracking-tight text-white">ClientOps</h1>
-          <p className="text-xs text-slate-400">Web Clients Operations & Health Monitor</p>
+          <h1 className="text-lg font-bold tracking-tight text-white hover:text-emerald-400 transition">ClientOps</h1>
+          <p className="text-xs text-slate-400">Tech Business Operations & Client Monitor</p>
         </div>
       </div>
 

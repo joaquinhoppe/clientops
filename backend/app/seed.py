@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.models import Client, Release
+from app.models import Client, Release, ClientNote, Payment
 
 SAMPLE_CLIENTS = [
     {
@@ -13,12 +13,15 @@ SAMPLE_CLIENTS = [
         "total_due": 250.00,
         "currency": "USD",
         "billing_status": "overdue",
+        "payment_due_day": 5,
+        "recurring_amount": 250.00,
         "current_version": "v2.4.1",
         "last_update": "2026-09-20",
         "releases": [
             {
                 "version": "v2.4.1",
                 "release_date": "2026-09-20",
+                "cost": 650.0,
                 "changelog": [
                     "Patched Stripe webhook signature verification",
                     "Fixed shopping cart quantity recalculation glitch",
@@ -28,10 +31,26 @@ SAMPLE_CLIENTS = [
             {
                 "version": "v2.4.0",
                 "release_date": "2026-09-01",
+                "cost": 1200.0,
                 "changelog": [
                     "Integrated multi-currency support",
                     "Redesigned checkout summary page"
                 ]
+            }
+        ],
+        "notes": [
+            {
+                "title": "Hosting Migration",
+                "content": "Migrated database to managed Postgres instance. Client notified of 15m planned downtime."
+            }
+        ],
+        "payments": [
+            {
+                "amount": 250.0,
+                "currency": "USD",
+                "due_date": "2026-09-05",
+                "status": "overdue",
+                "notes": "September monthly retainer"
             }
         ]
     },
@@ -43,12 +62,15 @@ SAMPLE_CLIENTS = [
         "total_due": 0.00,
         "currency": "USD",
         "billing_status": "paid",
+        "payment_due_day": 1,
+        "recurring_amount": 1500.00,
         "current_version": "v3.1.0",
         "last_update": "2026-09-25",
         "releases": [
             {
                 "version": "v3.1.0",
                 "release_date": "2026-09-25",
+                "cost": 2200.0,
                 "changelog": [
                     "Added real-time foreign exchange rate streaming",
                     "Security audit remediation for session tokens"
@@ -64,12 +86,15 @@ SAMPLE_CLIENTS = [
         "total_due": 1200.00,
         "currency": "USD",
         "billing_status": "overdue",
+        "payment_due_day": 15,
+        "recurring_amount": 600.00,
         "current_version": "v1.9.4",
         "last_update": "2026-08-15",
         "releases": [
             {
                 "version": "v1.9.4",
                 "release_date": "2026-08-15",
+                "cost": 850.0,
                 "changelog": [
                     "Offline barcode scanning cache update",
                     "Fixed receipt printer serial driver compatibility"
@@ -85,12 +110,15 @@ SAMPLE_CLIENTS = [
         "total_due": 0.00,
         "currency": "USD",
         "billing_status": "paid",
+        "payment_due_day": 10,
+        "recurring_amount": 900.00,
         "current_version": "v2.0.2",
         "last_update": "2026-09-22",
         "releases": [
             {
                 "version": "v2.0.2",
                 "release_date": "2026-09-22",
+                "cost": 1400.0,
                 "changelog": [
                     "HIPAA compliance audit logs exporter",
                     "WebRTC latency optimization for video consultations"
@@ -106,12 +134,15 @@ SAMPLE_CLIENTS = [
         "total_due": 450.00,
         "currency": "USD",
         "billing_status": "pending",
+        "payment_due_day": 20,
+        "recurring_amount": 450.00,
         "current_version": "v1.5.0",
         "last_update": "2026-09-18",
         "releases": [
             {
                 "version": "v1.5.0",
                 "release_date": "2026-09-18",
+                "cost": 750.0,
                 "changelog": [
                     "GPS vehicle fleet tracker integration",
                     "Automated route dispatch algorithm update"
@@ -122,7 +153,6 @@ SAMPLE_CLIENTS = [
 ]
 
 async def seed_database(db: AsyncSession):
-    # Check if clients already exist
     existing = await db.execute(select(Client))
     if existing.scalars().first():
         return
@@ -137,6 +167,8 @@ async def seed_database(db: AsyncSession):
             total_due=item["total_due"],
             currency=item["currency"],
             billing_status=item["billing_status"],
+            payment_due_day=item.get("payment_due_day", 1),
+            recurring_amount=item.get("recurring_amount", 0.0),
             current_version=item["current_version"],
             last_update=item["last_update"]
         )
@@ -148,8 +180,30 @@ async def seed_database(db: AsyncSession):
                 client_id=client.client_id,
                 version=rel["version"],
                 release_date=rel["release_date"],
-                changelog_raw=json.dumps(rel["changelog"])
+                changelog_raw=json.dumps(rel["changelog"]),
+                cost=rel.get("cost", 0.0)
             )
             db.add(release)
+
+        for n in item.get("notes", []):
+            note = ClientNote(
+                client_id=client.client_id,
+                title=n.get("title", ""),
+                content=n.get("content", ""),
+                created_at=datetime.now(timezone.utc)
+            )
+            db.add(note)
+
+        for p in item.get("payments", []):
+            payment = Payment(
+                client_id=client.client_id,
+                amount=p.get("amount", 0.0),
+                currency=p.get("currency", "USD"),
+                due_date=p.get("due_date", "2026-10-01"),
+                status=p.get("status", "unpaid"),
+                paid_at=p.get("paid_at"),
+                notes=p.get("notes", "")
+            )
+            db.add(payment)
 
     await db.commit()

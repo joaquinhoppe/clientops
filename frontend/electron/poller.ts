@@ -1,9 +1,10 @@
 import { BrowserWindow, Notification } from 'electron';
-import { detectOfflineTransitions, ClientBrief } from './pollerLogic';
+import { detectOfflineTransitions, detectPaymentAlerts, ClientBrief } from './pollerLogic';
 
 export class BackgroundPoller {
   private timer: NodeJS.Timeout | null = null;
   private stateMap = new Map<string, boolean>();
+  private alertedPaymentSet = new Set<string>();
   private window: BrowserWindow | null = null;
   private apiUrl: string;
   private apiKey: string;
@@ -32,9 +33,7 @@ export class BackgroundPoller {
 
   public start() {
     this.isPolling = true;
-    // Initial fetch immediately
     this.pollOnce();
-    // Schedule periodic polling
     if (this.timer) clearInterval(this.timer);
     this.timer = setInterval(() => {
       this.pollOnce();
@@ -65,10 +64,23 @@ export class BackgroundPoller {
 
       const clients: ClientBrief[] = await response.json();
 
-      // Detect offline transitions and show native notification
+      // 1. Detect offline transitions and show native notification (FR-05)
       const offlineAlerts = detectOfflineTransitions(this.stateMap, clients);
       for (const alert of offlineAlerts) {
         this.triggerNativeNotification(alert.name);
+      }
+
+      // 2. Detect payment due alerts and notify user if unpaid
+      const paymentAlerts = detectPaymentAlerts(this.alertedPaymentSet, clients);
+      for (const alert of paymentAlerts) {
+        if (alert.billing) {
+          this.triggerPaymentNotification(
+            alert.name,
+            alert.billing.total_due,
+            alert.billing.currency,
+            alert.billing.payment_due_day
+          );
+        }
       }
 
       // Notify renderer with updated data
@@ -102,6 +114,27 @@ export class BackgroundPoller {
       }
     } catch (err) {
       console.warn('Native notification failed to display:', err);
+    }
+  }
+
+  private triggerPaymentNotification(
+    clientName: string,
+    amount: number,
+    currency: string,
+    dueDay: number
+  ) {
+    try {
+      if (Notification.isSupported()) {
+        const formattedAmount = `${amount} ${currency}`;
+        const notif = new Notification({
+          title: 'Payment Overdue Alert 💳',
+          body: `${clientName} payment of ${formattedAmount} is unpaid (Due on day ${dueDay} of the month).`,
+          urgency: 'normal',
+        });
+        notif.show();
+      }
+    } catch (err) {
+      console.warn('Payment notification failed to display:', err);
     }
   }
 }

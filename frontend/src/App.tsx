@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Navbar } from './components/Navbar';
 import { FilterBar } from './components/FilterBar';
 import { ClientCard } from './components/ClientCard';
-import { ClientDetailModal } from './components/ClientDetailModal';
+import { ClientDetailPage } from './components/ClientDetailPage';
 import { ClientFormModal } from './components/ClientFormModal';
 import { SettingsModal } from './components/SettingsModal';
 import { filterClients } from './utils/filterLogic';
@@ -59,6 +59,10 @@ export default function App() {
         unsubscribeUpdates = window.api.onClientsUpdated((updatedClients: Client[]) => {
           if (Array.isArray(updatedClients)) {
             setClients(updatedClients);
+            setSelectedClient((current) => {
+              if (!current) return null;
+              return updatedClients.find((c) => c.client_id === current.client_id) || current;
+            });
           }
         });
       }
@@ -106,7 +110,7 @@ export default function App() {
   // Delete client
   const handleDeleteClient = async (client: Client) => {
     const confirmed = confirm(
-      `Are you sure you want to permanently delete "${client.name}" and all associated releases?`
+      `Are you sure you want to permanently delete "${client.name}" and all associated releases, notes, and payments?`
     );
     if (!confirmed) return;
 
@@ -136,6 +140,7 @@ export default function App() {
         onRefresh={loadClients}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenCreateClient={handleOpenCreateClient}
+        onGoHome={() => setSelectedClient(null)}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
@@ -160,77 +165,85 @@ export default function App() {
           </div>
         )}
 
-        {/* Search & Filters (FR-06) */}
-        <FilterBar
-          clients={clients}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          healthFilter={healthFilter}
-          onHealthFilterChange={setHealthFilter}
-          billingFilter={billingFilter}
-          onBillingFilterChange={setBillingFilter}
-        />
-
-        {/* Client Roster Grid (FR-01, FR-02, FR-03, FR-04) */}
-        {filteredClients.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredClients.map((client) => (
-              <ClientCard
-                key={client.client_id}
-                client={client}
-                onSelectClient={setSelectedClient}
-                onEditClient={handleEditClient}
-                onDeleteClient={handleDeleteClient}
-                onToggleStatus={handleToggleStatus}
-                isToggling={togglingClientId === client.client_id}
-              />
-            ))}
-          </div>
+        {selectedClient ? (
+          /* Dedicated Client Page */
+          <ClientDetailPage
+            client={selectedClient}
+            onBack={() => setSelectedClient(null)}
+            onEditClient={handleEditClient}
+            onToggleStatus={handleToggleStatus}
+            isToggling={togglingClientId === selectedClient.client_id}
+            onRefreshClient={loadClients}
+          />
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-800 p-12 text-center bg-slate-900/30">
-            {clients.length === 0 ? (
-              <>
-                <Inbox className="h-10 w-10 text-slate-600 mb-3" />
-                <h3 className="text-sm font-semibold text-slate-300">No Clients Registered</h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                  Get started by creating your first client deployment.
-                </p>
-                <button
-                  onClick={handleOpenCreateClient}
-                  className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500 transition"
-                >
-                  Create Client
-                </button>
-              </>
+          /* Dashboard Roster View */
+          <>
+            {/* Search & Filters (FR-06) */}
+            <FilterBar
+              clients={clients}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              healthFilter={healthFilter}
+              onHealthFilterChange={setHealthFilter}
+              billingFilter={billingFilter}
+              onBillingFilterChange={setBillingFilter}
+            />
+
+            {/* Client Roster Grid (FR-01, FR-02, FR-03, FR-04) */}
+            {filteredClients.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredClients.map((client) => (
+                  <ClientCard
+                    key={client.client_id}
+                    client={client}
+                    onSelectClient={setSelectedClient}
+                    onEditClient={handleEditClient}
+                    onDeleteClient={handleDeleteClient}
+                    onToggleStatus={handleToggleStatus}
+                    isToggling={togglingClientId === client.client_id}
+                  />
+                ))}
+              </div>
             ) : (
-              <>
-                <AlertCircle className="h-10 w-10 text-slate-600 mb-3" />
-                <h3 className="text-sm font-semibold text-slate-300">No Matching Clients</h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  Try adjusting your search query or clearing active filters.
-                </p>
-                <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setHealthFilter('all');
-                    setBillingFilter('all');
-                  }}
-                  className="mt-4 rounded-lg bg-slate-800 px-3.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:text-white transition"
-                >
-                  Reset Filters
-                </button>
-              </>
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-800 p-12 text-center bg-slate-900/30">
+                {clients.length === 0 ? (
+                  <>
+                    <Inbox className="h-10 w-10 text-slate-600 mb-3" />
+                    <h3 className="text-sm font-semibold text-slate-300">No Clients Registered</h3>
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm">
+                      Get started by creating your first client deployment.
+                    </p>
+                    <button
+                      onClick={handleOpenCreateClient}
+                      className="mt-4 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-500 transition"
+                    >
+                      Create Client
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="h-10 w-10 text-slate-600 mb-3" />
+                    <h3 className="text-sm font-semibold text-slate-300">No Matching Clients</h3>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Try adjusting your search query or clearing active filters.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSearchQuery('');
+                        setHealthFilter('all');
+                        setBillingFilter('all');
+                      }}
+                      className="mt-4 rounded-lg bg-slate-800 px-3.5 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700 hover:text-white transition"
+                    >
+                      Reset Filters
+                    </button>
+                  </>
+                )}
+              </div>
             )}
-          </div>
+          </>
         )}
       </main>
-
-      {/* Release Notes / Changelog Modal (FR-04) */}
-      <ClientDetailModal
-        client={selectedClient}
-        onClose={() => setSelectedClient(null)}
-        onClientUpdated={loadClients}
-      />
 
       {/* Create / Edit Client Modal */}
       <ClientFormModal
